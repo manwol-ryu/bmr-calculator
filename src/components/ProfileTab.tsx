@@ -13,11 +13,20 @@ const GOALS: { value: Goal; label: string }[] = [
   { value: 'bulk', label: '증량' },
 ];
 
+const ACTIVITY_LEVELS = [
+  { value: 1.2, label: '비활동적 (운동 거의 안 함)' },
+  { value: 1.375, label: '가벼운 활동 (주 1~3회)' },
+  { value: 1.55, label: '보통 활동 (주 3~5회)' },
+  { value: 1.725, label: '활발한 활동 (주 6~7회)' },
+  { value: 1.9, label: '매우 활발 (하루 2회 이상)' },
+];
+
 export default function ProfileTab({ profile, onSave }: Props) {
   const [gender, setGender] = useState<Gender>(profile?.gender ?? 'male');
   const [age, setAge] = useState(profile?.age?.toString() ?? '');
   const [height, setHeight] = useState(profile?.heightCm?.toString() ?? '');
   const [weight, setWeight] = useState(profile?.weightKg?.toString() ?? '');
+  const [activityFactor, setActivityFactor] = useState(profile?.activityFactor ?? 1.55);
   const [goal, setGoal] = useState<Goal>(profile?.goal ?? 'maintain');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -30,9 +39,9 @@ export default function ProfileTab({ profile, onSave }: Props) {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    const p: UserProfile = { gender, age: a, heightCm: h, weightKg: w, goal };
+    const p: UserProfile = { gender, age: a, heightCm: h, weightKg: w, activityFactor, goal };
     const bmr = calculateBMR(gender, w, h, a);
-    const baseTdee = calculateBaseTdee(bmr);
+    const baseTdee = calculateBaseTdee(bmr, activityFactor);
     onSave(p, Math.round(bmr), baseTdee);
   };
 
@@ -62,6 +71,15 @@ export default function ProfileTab({ profile, onSave }: Props) {
         <label htmlFor="weight">체중 (kg)</label>
         <input id="weight" type="number" className={errors.weight ? 'error' : ''} value={weight} onChange={e => setWeight(e.target.value)} placeholder="70" min="1" max="500" />
         {errors.weight && <div className="error-message" role="alert">{errors.weight}</div>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="activity">일상 활동 수준</label>
+        <select id="activity" className="activity-select" value={activityFactor} onChange={e => setActivityFactor(Number(e.target.value))}>
+          {ACTIVITY_LEVELS.map(l => (
+            <option key={l.value} value={l.value}>{l.label}</option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">

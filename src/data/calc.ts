@@ -5,10 +5,8 @@ export function calculateBMR(gender: Gender, weightKg: number, heightCm: number,
   return gender === 'male' ? base + 5 : base - 161;
 }
 
-const BASE_ACTIVITY_FACTOR = 1.2; // sedentary baseline
-
-export function calculateBaseTdee(bmr: number): number {
-  return Math.round(bmr * BASE_ACTIVITY_FACTOR);
+export function calculateBaseTdee(bmr: number, activityFactor: number): number {
+  return Math.round(bmr * activityFactor);
 }
 
 export function getGoalCalorieAdjustment(goal: Goal, tdee: number): number {

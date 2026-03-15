@@ -23,5 +23,7 @@ export function calcExerciseCalories(
   durationMin: number,
   intensity: 'low' | 'medium' | 'high',
 ): number {
-  return Math.round(met * weightKg * (durationMin / 60) * INTENSITY_MULTIPLIER[intensity]);
+  // Net calories: subtract MET 1.0 (basal rate) to avoid double-counting with TDEE
+  const adjustedMet = Math.max(0, met * INTENSITY_MULTIPLIER[intensity] - 1.0);
+  return Math.round(adjustedMet * weightKg * (durationMin / 60));
 }

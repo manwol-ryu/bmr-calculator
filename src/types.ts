@@ -7,6 +7,7 @@ export interface UserProfile {
   age: number;
   heightCm: number;
   weightKg: number;
+  activityFactor: number;
   goal: Goal;
 }
 
