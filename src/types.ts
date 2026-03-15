@@ -1,6 +1,15 @@
 export type Gender = 'male' | 'female';
 export type Goal = 'cut' | 'maintain' | 'bulk';
 export type Intensity = 'low' | 'medium' | 'high';
+export type MealTime = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'custom';
+
+export const MEAL_LABELS: Record<MealTime, string> = {
+  breakfast: '아침',
+  lunch: '점심',
+  dinner: '저녁',
+  snack: '간식',
+  custom: '기타',
+};
 
 export interface UserProfile {
   gender: Gender;
@@ -48,6 +57,8 @@ export interface FoodEntry {
   carbs: number;
   protein: number;
   fat: number;
+  mealTime: MealTime;
+  customTime?: string;
 }
 
 export interface DailySummary {
