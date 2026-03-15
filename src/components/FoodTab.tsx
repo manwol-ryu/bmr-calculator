@@ -70,9 +70,9 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
       name: manualName.trim(),
       amount: 1,
       calories: Math.round(Number(manualCalories)),
-      carbs: manualCarbs ? Math.round(Number(manualCarbs) * 10) / 10 : 0,
-      protein: manualProtein ? Math.round(Number(manualProtein) * 10) / 10 : 0,
-      fat: manualFat ? Math.round(Number(manualFat) * 10) / 10 : 0,
+      carbs: manualCarbs ? Math.round(Math.max(0, Number(manualCarbs)) * 10) / 10 : 0,
+      protein: manualProtein ? Math.round(Math.max(0, Number(manualProtein)) * 10) / 10 : 0,
+      fat: manualFat ? Math.round(Math.max(0, Number(manualFat)) * 10) / 10 : 0,
       mealTime,
       customTime: mealTime === 'custom' ? customTime : undefined,
     };
