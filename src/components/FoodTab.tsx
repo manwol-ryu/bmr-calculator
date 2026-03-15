@@ -15,12 +15,22 @@ function getMealIcon(meal: MealTime): string {
   return { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍪', custom: '⏰' }[meal];
 }
 
+type InputMode = 'search' | 'manual';
+
 export default function FoodTab({ foods, onAdd, onRemove }: Props) {
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState('');
   const [amount, setAmount] = useState('1');
   const [mealTime, setMealTime] = useState<MealTime>('breakfast');
   const [customTime, setCustomTime] = useState('');
+  const [inputMode, setInputMode] = useState<InputMode>('search');
+
+  // Manual entry state
+  const [manualName, setManualName] = useState('');
+  const [manualCalories, setManualCalories] = useState('');
+  const [manualCarbs, setManualCarbs] = useState('');
+  const [manualProtein, setManualProtein] = useState('');
+  const [manualFat, setManualFat] = useState('');
 
   const filtered = search
     ? FOODS.filter(f => f.name.includes(search) || f.category.includes(search))
@@ -48,6 +58,30 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
     setSearch('');
     setSelectedId('');
     setAmount('1');
+  };
+
+  const handleManualAdd = () => {
+    if (!manualName.trim() || !manualCalories || Number(manualCalories) <= 0) return;
+    if (mealTime === 'custom' && !customTime) return;
+
+    const entry: FoodEntry = {
+      id: Date.now().toString(),
+      foodId: 'custom',
+      name: manualName.trim(),
+      amount: 1,
+      calories: Math.round(Number(manualCalories)),
+      carbs: manualCarbs ? Math.round(Number(manualCarbs) * 10) / 10 : 0,
+      protein: manualProtein ? Math.round(Number(manualProtein) * 10) / 10 : 0,
+      fat: manualFat ? Math.round(Number(manualFat) * 10) / 10 : 0,
+      mealTime,
+      customTime: mealTime === 'custom' ? customTime : undefined,
+    };
+    onAdd(entry);
+    setManualName('');
+    setManualCalories('');
+    setManualCarbs('');
+    setManualProtein('');
+    setManualFat('');
   };
 
   const selectedFood = FOODS.find(f => f.id === selectedId);
@@ -93,36 +127,95 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="food-search">음식 검색</label>
-          <input id="food-search" type="text" value={search} onChange={e => { setSearch(e.target.value); setSelectedId(''); }} placeholder="음식 이름 또는 카테고리" />
-        </div>
-
-        <div className="food-grid">
-          {filtered.slice(0, 12).map(f => (
+          <label>입력 방식</label>
+          <div className="input-mode-toggle">
             <button
-              key={f.id}
               type="button"
-              className={`food-chip ${selectedId === f.id ? 'active' : ''}`}
-              onClick={() => { setSelectedId(f.id); setAmount(f.unit === 'serving' ? '1' : String(f.baseAmount)); }}
+              className={`mode-btn ${inputMode === 'search' ? 'active' : ''}`}
+              onClick={() => setInputMode('search')}
             >
-              {f.name}
-              <span className="food-chip-cal">{f.calories}kcal</span>
+              목록에서 선택
             </button>
-          ))}
+            <button
+              type="button"
+              className={`mode-btn ${inputMode === 'manual' ? 'active' : ''}`}
+              onClick={() => setInputMode('manual')}
+            >
+              직접 입력
+            </button>
+          </div>
         </div>
 
-        {selectedFood && (
-          <div className="food-selected">
-            <div className="food-selected-name">{selectedFood.name}</div>
-            <div className="food-selected-info">
-              기준: {selectedFood.baseAmount}{selectedFood.unit} | {selectedFood.calories}kcal
-              <span className="macro-mini"> C{selectedFood.carbs} P{selectedFood.protein} F{selectedFood.fat}</span>
+        {inputMode === 'search' && (
+          <>
+            <div className="form-group">
+              <label htmlFor="food-search">음식 검색</label>
+              <input id="food-search" type="text" value={search} onChange={e => { setSearch(e.target.value); setSelectedId(''); }} placeholder="음식 이름 또는 카테고리" />
+            </div>
+
+            <div className="food-grid">
+              {filtered.slice(0, 12).map(f => (
+                <button
+                  key={f.id}
+                  type="button"
+                  className={`food-chip ${selectedId === f.id ? 'active' : ''}`}
+                  onClick={() => { setSelectedId(f.id); setAmount(f.unit === 'serving' ? '1' : String(f.baseAmount)); }}
+                >
+                  {f.name}
+                  <span className="food-chip-cal">{f.calories}kcal</span>
+                </button>
+              ))}
+            </div>
+
+            {selectedFood && (
+              <div className="food-selected">
+                <div className="food-selected-name">{selectedFood.name}</div>
+                <div className="food-selected-info">
+                  기준: {selectedFood.baseAmount}{selectedFood.unit} | {selectedFood.calories}kcal
+                  <span className="macro-mini"> C{selectedFood.carbs} P{selectedFood.protein} F{selectedFood.fat}</span>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="food-amount">수량 ({selectedFood.unit === 'serving' ? '인분' : selectedFood.unit})</label>
+                  <input id="food-amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} min="1" step={selectedFood.unit === 'serving' ? '1' : '10'} />
+                </div>
+                <button type="button" className="calculate-btn food-btn" onClick={handleAdd}>
+                  {getMealIcon(mealTime)} {MEAL_LABELS[mealTime]}에 추가
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {inputMode === 'manual' && (
+          <div className="manual-entry">
+            <div className="form-group">
+              <label htmlFor="manual-name">음식 이름 *</label>
+              <input id="manual-name" type="text" value={manualName} onChange={e => setManualName(e.target.value)} placeholder="예: 된장찌개" />
             </div>
             <div className="form-group">
-              <label htmlFor="food-amount">수량 ({selectedFood.unit === 'serving' ? '인분' : selectedFood.unit})</label>
-              <input id="food-amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} min="1" step={selectedFood.unit === 'serving' ? '1' : '10'} />
+              <label htmlFor="manual-cal">칼로리 (kcal) *</label>
+              <input id="manual-cal" type="number" value={manualCalories} onChange={e => setManualCalories(e.target.value)} placeholder="0" min="0" />
             </div>
-            <button type="button" className="calculate-btn food-btn" onClick={handleAdd}>
+            <div className="macro-inputs">
+              <div className="form-group">
+                <label htmlFor="manual-carbs">탄수화물 (g)</label>
+                <input id="manual-carbs" type="number" value={manualCarbs} onChange={e => setManualCarbs(e.target.value)} placeholder="0" min="0" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="manual-protein">단백질 (g)</label>
+                <input id="manual-protein" type="number" value={manualProtein} onChange={e => setManualProtein(e.target.value)} placeholder="0" min="0" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="manual-fat">지방 (g)</label>
+                <input id="manual-fat" type="number" value={manualFat} onChange={e => setManualFat(e.target.value)} placeholder="0" min="0" />
+              </div>
+            </div>
+            <button
+              type="button"
+              className="calculate-btn food-btn"
+              onClick={handleManualAdd}
+              disabled={!manualName.trim() || !manualCalories || Number(manualCalories) <= 0}
+            >
               {getMealIcon(mealTime)} {MEAL_LABELS[mealTime]}에 추가
             </button>
           </div>

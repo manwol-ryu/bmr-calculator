@@ -318,6 +318,49 @@ input.error { border-color: var(--danger); }
   font-weight: 400;
 }
 
+/* Input Mode Toggle */
+.input-mode-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid #ddd;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 0.45rem 0;
+  border: none;
+  background: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Manual Entry */
+.manual-entry { margin-top: 0.3rem; }
+
+.macro-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.macro-inputs label { font-size: 0.78rem; }
+.macro-inputs input { font-size: 0.85rem; padding: 0.45rem 0.5rem; }
+
+.calculate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Summary Grid */
 .summary-card { background: var(--primary); color: #fff; }
 
