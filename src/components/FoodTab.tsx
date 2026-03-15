@@ -29,6 +29,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
   const handleAdd = () => {
     const food = FOODS.find(f => f.id === selectedId);
     if (!food || !amount || Number(amount) <= 0) return;
+    if (mealTime === 'custom' && !customTime) return;
 
     const multiplier = food.unit === 'serving' ? Number(amount) : Number(amount) / food.baseAmount;
     const entry: FoodEntry = {
@@ -78,12 +79,16 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
             ))}
           </div>
           {mealTime === 'custom' && (
-            <input
-              type="time"
-              className="time-input"
-              value={customTime}
-              onChange={e => setCustomTime(e.target.value)}
-            />
+            <div>
+              <input
+                type="time"
+                className={`time-input${mealTime === 'custom' && !customTime ? ' error' : ''}`}
+                value={customTime}
+                onChange={e => setCustomTime(e.target.value)}
+                required
+              />
+              {!customTime && <div className="error-message">시간을 입력해주세요</div>}
+            </div>
           )}
         </div>
 
