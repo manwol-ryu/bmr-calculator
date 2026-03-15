@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { FoodEntry } from '../types';
+import type { FoodEntry, MealTime } from '../types';
+import { MEAL_LABELS } from '../types';
 import { FOODS } from '../data/foods';
 
 interface Props {
@@ -8,10 +9,18 @@ interface Props {
   onRemove: (id: string) => void;
 }
 
+const MEAL_ORDER: MealTime[] = ['breakfast', 'lunch', 'dinner', 'snack', 'custom'];
+
+function getMealIcon(meal: MealTime): string {
+  return { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍪', custom: '⏰' }[meal];
+}
+
 export default function FoodTab({ foods, onAdd, onRemove }: Props) {
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState('');
   const [amount, setAmount] = useState('1');
+  const [mealTime, setMealTime] = useState<MealTime>('breakfast');
+  const [customTime, setCustomTime] = useState('');
 
   const filtered = search
     ? FOODS.filter(f => f.name.includes(search) || f.category.includes(search))
@@ -20,6 +29,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
   const handleAdd = () => {
     const food = FOODS.find(f => f.id === selectedId);
     if (!food || !amount || Number(amount) <= 0) return;
+    if (mealTime === 'custom' && !customTime) return;
 
     const multiplier = food.unit === 'serving' ? Number(amount) : Number(amount) / food.baseAmount;
     const entry: FoodEntry = {
@@ -31,6 +41,8 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
       carbs: Math.round(food.carbs * multiplier * 10) / 10,
       protein: Math.round(food.protein * multiplier * 10) / 10,
       fat: Math.round(food.fat * multiplier * 10) / 10,
+      mealTime,
+      customTime: mealTime === 'custom' ? customTime : undefined,
     };
     onAdd(entry);
     setSearch('');
@@ -44,9 +56,42 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
   const totalProtein = foods.reduce((s, f) => s + f.protein, 0);
   const totalFat = foods.reduce((s, f) => s + f.fat, 0);
 
+  const grouped = MEAL_ORDER
+    .map(meal => ({ meal, items: foods.filter(f => f.mealTime === meal) }))
+    .filter(g => g.items.length > 0);
+
   return (
     <div>
       <div className="card">
+        <div className="form-group">
+          <label>식사 시간</label>
+          <div className="meal-toggle">
+            {MEAL_ORDER.map(m => (
+              <button
+                key={m}
+                type="button"
+                className={`meal-chip ${mealTime === m ? 'active' : ''}`}
+                onClick={() => setMealTime(m)}
+              >
+                <span className="meal-icon">{getMealIcon(m)}</span>
+                {MEAL_LABELS[m]}
+              </button>
+            ))}
+          </div>
+          {mealTime === 'custom' && (
+            <div>
+              <input
+                type="time"
+                className={`time-input${mealTime === 'custom' && !customTime ? ' error' : ''}`}
+                value={customTime}
+                onChange={e => setCustomTime(e.target.value)}
+                required
+              />
+              {!customTime && <div className="error-message">시간을 입력해주세요</div>}
+            </div>
+          )}
+        </div>
+
         <div className="form-group">
           <label htmlFor="food-search">음식 검색</label>
           <input id="food-search" type="text" value={search} onChange={e => { setSearch(e.target.value); setSelectedId(''); }} placeholder="음식 이름 또는 카테고리" />
@@ -77,26 +122,42 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
               <label htmlFor="food-amount">수량 ({selectedFood.unit === 'serving' ? '인분' : selectedFood.unit})</label>
               <input id="food-amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} min="1" step={selectedFood.unit === 'serving' ? '1' : '10'} />
             </div>
-            <button type="button" className="calculate-btn food-btn" onClick={handleAdd}>식단 추가</button>
+            <button type="button" className="calculate-btn food-btn" onClick={handleAdd}>
+              {getMealIcon(mealTime)} {MEAL_LABELS[mealTime]}에 추가
+            </button>
           </div>
         )}
       </div>
 
-      {foods.length > 0 && (
+      {grouped.length > 0 && (
         <div className="card">
           <h3 className="section-title">오늘의 식단</h3>
-          <div className="entry-list">
-            {foods.map(f => (
-              <div key={f.id} className="entry-item">
-                <div className="entry-info">
-                  <span className="entry-name">{f.name}</span>
-                  <span className="entry-detail">C{f.carbs}g P{f.protein}g F{f.fat}g</span>
+          {grouped.map(({ meal, items }) => {
+            const mealCal = items.reduce((s, f) => s + f.calories, 0);
+            return (
+              <div key={meal} className="meal-group">
+                <div className="meal-group-header">
+                  <span>{getMealIcon(meal)} {MEAL_LABELS[meal]}</span>
+                  <span className="meal-group-cal">{mealCal} kcal</span>
                 </div>
-                <span className="entry-cal food-cal">+{f.calories} kcal</span>
-                <button type="button" className="remove-btn" onClick={() => onRemove(f.id)} aria-label={`${f.name} 삭제`}>×</button>
+                <div className="entry-list">
+                  {items.map(f => (
+                    <div key={f.id} className="entry-item">
+                      <div className="entry-info">
+                        <span className="entry-name">
+                          {f.name}
+                          {f.customTime && <span className="entry-time">{f.customTime}</span>}
+                        </span>
+                        <span className="entry-detail">C{f.carbs}g P{f.protein}g F{f.fat}g</span>
+                      </div>
+                      <span className="entry-cal food-cal">+{f.calories} kcal</span>
+                      <button type="button" className="remove-btn" onClick={() => onRemove(f.id)} aria-label={`${f.name} 삭제`}>×</button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
           <div className="entry-total food-total">
             총 섭취: {totalCal} kcal (C{Math.round(totalCarbs)}g P{Math.round(totalProtein)}g F{Math.round(totalFat)}g)
           </div>

@@ -251,6 +251,73 @@ input.error { border-color: var(--danger); }
 .food-selected-info { font-size: 0.78rem; color: #888; margin-bottom: 0.5rem; }
 .macro-mini { margin-left: 0.3rem; font-weight: 600; }
 
+/* Meal Time Toggle */
+.meal-toggle {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.meal-chip {
+  padding: 0.4rem 0.7rem;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.meal-chip:hover { border-color: var(--accent); }
+.meal-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.meal-icon { font-size: 0.9rem; }
+
+.time-input {
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-top: 0.4rem;
+}
+
+.time-input:focus { outline: none; border-color: var(--blue); }
+
+/* Meal Group */
+.meal-group {
+  margin-bottom: 0.8rem;
+}
+
+.meal-group:last-of-type { margin-bottom: 0; }
+
+.meal-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.4rem 0;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 0.3rem;
+}
+
+.meal-group-cal {
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.entry-time {
+  font-size: 0.72rem;
+  color: #999;
+  margin-left: 0.4rem;
+  font-weight: 400;
+}
+
 /* Summary Grid */
 .summary-card { background: var(--primary); color: #fff; }
 
