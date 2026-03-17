@@ -8,7 +8,7 @@ interface Props {
 function ProgressBar({ label, current, target, color, unit }: {
   label: string; current: number; target: number; color: string; unit: string;
 }) {
-  const pct = target > 0 ? Math.min((current / target) * 100, 150) : 0;
+  const pct = target > 0 ? (current / target) * 100 : 0;
   const over = current > target;
   return (
     <div className="progress-group">
@@ -18,6 +18,9 @@ function ProgressBar({ label, current, target, color, unit }: {
       </div>
       <div className="progress-track">
         <div className="progress-fill" style={{ width: `${Math.min(pct, 100)}%`, background: over ? '#E25555' : color }} />
+        {over && (
+          <div className="progress-overflow" style={{ width: `${Math.min(pct - 100, 50)}%` }} />
+        )}
       </div>
     </div>
   );

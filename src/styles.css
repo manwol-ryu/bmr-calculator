@@ -401,11 +401,28 @@ input.error { border-color: var(--danger); }
   background: #eee;
   border-radius: 4px;
   overflow: hidden;
+  display: flex;
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 4px 0 0 4px;
+  transition: width 0.3s ease;
+  flex-shrink: 0;
+}
+
+.progress-overflow {
+  height: 100%;
+  flex-shrink: 0;
+  border-radius: 0 4px 4px 0;
+  background-color: #E25555;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.3) 2px,
+    rgba(255,255,255,0.3) 4px
+  );
   transition: width 0.3s ease;
 }
 
@@ -450,4 +467,5 @@ input.error { border-color: var(--danger); }
   h1 { font-size: 1.2rem; }
   .summary-value { font-size: 1.1rem; }
   .calorie-remaining { font-size: 1.6rem; }
+  .macro-inputs { grid-template-columns: 1fr 1fr; }
 }

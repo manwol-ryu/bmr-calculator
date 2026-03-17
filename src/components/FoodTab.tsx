@@ -24,6 +24,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
   const [mealTime, setMealTime] = useState<MealTime>('breakfast');
   const [customTime, setCustomTime] = useState('');
   const [inputMode, setInputMode] = useState<InputMode>('search');
+  const [customTimeTouched, setCustomTimeTouched] = useState(false);
 
   // Manual entry state
   const [manualName, setManualName] = useState('');
@@ -39,7 +40,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
   const handleAdd = () => {
     const food = FOODS.find(f => f.id === selectedId);
     if (!food || !amount || Number(amount) <= 0) return;
-    if (mealTime === 'custom' && !customTime) return;
+    if (mealTime === 'custom' && !customTime) { setCustomTimeTouched(true); return; }
 
     const multiplier = food.unit === 'serving' ? Number(amount) : Number(amount) / food.baseAmount;
     const entry: FoodEntry = {
@@ -62,7 +63,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
 
   const handleManualAdd = () => {
     if (!manualName.trim() || !manualCalories || Number(manualCalories) <= 0) return;
-    if (mealTime === 'custom' && !customTime) return;
+    if (mealTime === 'custom' && !customTime) { setCustomTimeTouched(true); return; }
 
     const entry: FoodEntry = {
       id: Date.now().toString(),
@@ -105,7 +106,8 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
                 key={m}
                 type="button"
                 className={`meal-chip ${mealTime === m ? 'active' : ''}`}
-                onClick={() => setMealTime(m)}
+                aria-pressed={mealTime === m}
+                onClick={() => { setMealTime(m); if (m !== 'custom') setCustomTimeTouched(false); }}
               >
                 <span className="meal-icon">{getMealIcon(m)}</span>
                 {MEAL_LABELS[m]}
@@ -116,12 +118,13 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
             <div>
               <input
                 type="time"
-                className={`time-input${mealTime === 'custom' && !customTime ? ' error' : ''}`}
+                className={`time-input${customTimeTouched && !customTime ? ' error' : ''}`}
                 value={customTime}
                 onChange={e => setCustomTime(e.target.value)}
+                onBlur={() => setCustomTimeTouched(true)}
                 required
               />
-              {!customTime && <div className="error-message">시간을 입력해주세요</div>}
+              {customTimeTouched && !customTime && <div className="error-message">시간을 입력해주세요</div>}
             </div>
           )}
         </div>
@@ -132,6 +135,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
             <button
               type="button"
               className={`mode-btn ${inputMode === 'search' ? 'active' : ''}`}
+              aria-pressed={inputMode === 'search'}
               onClick={() => setInputMode('search')}
             >
               목록에서 선택
@@ -139,6 +143,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
             <button
               type="button"
               className={`mode-btn ${inputMode === 'manual' ? 'active' : ''}`}
+              aria-pressed={inputMode === 'manual'}
               onClick={() => setInputMode('manual')}
             >
               직접 입력
@@ -154,7 +159,7 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
             </div>
 
             <div className="food-grid">
-              {filtered.slice(0, 12).map(f => (
+              {filtered.length > 0 ? filtered.slice(0, 12).map(f => (
                 <button
                   key={f.id}
                   type="button"
@@ -164,7 +169,9 @@ export default function FoodTab({ foods, onAdd, onRemove }: Props) {
                   {f.name}
                   <span className="food-chip-cal">{f.calories}kcal</span>
                 </button>
-              ))}
+              )) : search && (
+                <p className="empty-state">'{search}' 검색 결과가 없습니다. 직접 입력을 이용해주세요.</p>
+              )}
             </div>
 
             {selectedFood && (

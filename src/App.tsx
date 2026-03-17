@@ -70,8 +70,8 @@ export default function App() {
 
       {summary && tab !== 'result' && (
         <div className="mini-summary">
-          <span>목표 {summary.adjustedTdee}</span>
-          <span>섭취 {summary.intakeCalories}</span>
+          <span>목표 {summary.adjustedTdee} kcal</span>
+          <span>섭취 {summary.intakeCalories} kcal</span>
           <span className={summary.remainingCalories < 0 ? 'over' : ''}>
             남은 {summary.remainingCalories} kcal
           </span>
